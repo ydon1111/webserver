@@ -23,3 +23,5 @@ class Answer(models.Model):
     voter = models.ManyToManyField(User, related_name='voter_answer')
 
 
+
+

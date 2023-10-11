@@ -34,13 +34,14 @@ ALLOWED_HOSTS = ['129.154.207.228']
 INSTALLED_APPS = [
     'common.apps.CommonConfig',
     'pybo.apps.PyboConfig',
+    'demo.apps.DemoConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'demo.apps.DemoConfig',
+    
 ]
 
 MIDDLEWARE = [

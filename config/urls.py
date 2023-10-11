@@ -11,3 +11,5 @@ urlpatterns = [
     
     path('demo/',include('demo.urls')),
 ]
+
+handler404 = 'common.views.page_not_found'

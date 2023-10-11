@@ -6,6 +6,10 @@ from django.utils import timezone
 from pybo.forms import QuestionForm
 from pybo.models import Question
 
+from django.db import connection
+
+
+
 
 @login_required(login_url='common:login')
 def question_create(request):
@@ -60,3 +64,7 @@ def question_vote(request, question_id):
     else:
         question.voter.add(request.user)
     return redirect('pybo:detail', question_id=question.id)
+
+
+# 데이터베이스 작업 수행
+connection.close()  # 연결을 닫음

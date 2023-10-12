@@ -8,6 +8,8 @@ urlpatterns = [
 
     #upload_views.py 
     path('upload/', upload_views.upload_csv, name='upload_csv'),
+    path('upload/result/', calculate_views.show_analysis_result, name='result'),
+
 
 
     #calculate_views.py 

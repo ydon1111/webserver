@@ -5,25 +5,22 @@ import scipy
 
 import os 
 
+from django.shortcuts import render
+from django.views.generic.base import View
+
+
 files_path = 'media\\PPI\\'
-
 file_name_and_time_lst = []
-
 
 for f_name in os.listdir(f"{files_path}"):
     written_time = os.path.getctime(f"{files_path}{f_name}")
     file_name_and_time_lst.append((f_name, written_time))
 
-
 sorted_file_lst = sorted(file_name_and_time_lst, key=lambda x: x[1], reverse=True)
 recent_file = sorted_file_lst[0]
 recent_file_name = recent_file[0]
 
-
 csv_dataset = os.path.join(files_path,recent_file_name)
-
-print(csv_dataset)
-
 
 
 def check_ms(IBI): 
@@ -103,3 +100,30 @@ def anal_HRVfreq(IBI):
     nLF=pLF/(pTP-pVLF)
     nHF=pHF/(pTP-pVLF)
     return freq, aY, '{:.1f}'.format(pTP), '{:.1f}'.format(pVLF), '{:.1f}'.format(pLF), '{:.1f}'.format(pHF), '{:.1f}'.format(pLF_HF), '{:.1f}'.format(nLF), '{:.1f}'.format(nHF)
+
+
+
+def show_analysis_result(request):
+    dataset = csv_dataset  
+    avnn, sdsd, rmssd, pnnx = anal_HRVtime(dataset)
+    freq, aY, ptp, pvlf, plf, phf, plf_hf, nlf, nhf = anal_HRVfreq(dataset)
+
+    return render(request, 'demo/result.html', {
+        'avnn_result': avnn,
+        'sdsd_result': sdsd,
+        'rmssd_result': rmssd,
+        'pnnx_result': pnnx,
+        'ptp_result': ptp,
+        'pvlf_result': pvlf,
+        'plf_result': plf,
+        'phf_result': phf,
+        'plf_hf_result': plf_hf,
+        'nlf_result': nlf,
+        'nhf_result': nhf,
+    })
+
+
+
+
+
+# show_analysis_result(csv_dataset)

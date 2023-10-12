@@ -1,9 +1,15 @@
 from django.urls import path
-from . import views
+from .views import upload_views,calculate_views
 
 
 app_name = 'demo'
 
 urlpatterns = [
-    path('upload/', views.upload_csv, name='upload_csv'),
+
+    #upload_views.py 
+    path('upload/', upload_views.upload_csv, name='upload_csv'),
+
+
+    #calculate_views.py 
+
 ]

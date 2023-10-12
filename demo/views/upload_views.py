@@ -6,7 +6,7 @@ from io import TextIOWrapper
 
 from django.db import connection
 
-from .forms import UploadForm
+from ..forms import UploadForm
 from demo.models import CSVData
 
 
@@ -21,15 +21,6 @@ def upload_csv(request):
     else:
         form = UploadForm()
     return render(request, 'demo/upload.html', {'form': form})
-
-
-
-
-
-
-
-
-
 
 
 

@@ -1,0 +1,229 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+
+    <style>
+      table {
+        width: 640 px;
+        border-top: 1px solid #444444;
+        border-collapse: collapse;
+      }
+      th, td {
+        border-bottom: 1px solid #444444;
+        border-left: 1px solid #444444;
+        padding: 2px;
+      }
+      th:first-child, td:first-child {
+        border-left: none;
+      }
+</style>
+  </head>
+
+  <body> 
+    <div style="background: white ; width: 640px">
+    
+      <h1>HRV analysis (V1.0)</h1>
+      <p align="justify"> 
+Heart Rate Variability (HRV) is a physiological phenomenon that refers to the variation in time intervals between successive heartbeats. It is a measure of the autonomic nervous system's influence on heart rate and is often used as a non-invasive marker of the body's ability to regulate and respond to various physiological and psychological stressors.
+This program computes various HRV time domain variables, including AVNN, SDSD, RMSSD, and pNN50, as well as frequency domain variables such as TP, VLF, LF, HF, LF/HF, nLF, and nHF.
+
+      </p>
+
+      <input type="file" id="fileInput" accept=".txt, .csv">
+      <div id="fileContent"></div>
+      <script>
+        document.getElementById('fileInput').addEventListener('change', function (e) {const file = e.target.files[0];
+          if (!file) {
+              alert('Choose a file.');
+              return;
+          }
+          const reader = new FileReader();
+          reader.onload = function (e) {
+              fileContent = e.target.result;
+              fname=file.name.split(".");
+              fname.pop()
+              fname=fname.join('.')
+              //document.getElementById('fileContent').textContent = fileContent;
+              run = pyscript.interpreter.globals.get('run_correction') 
+              run(fileContent);
+          };
+          reader.readAsText(file);
+        });
+        function download(fileContent){
+          const blob = new Blob([fileContent], { type: 'text/plain' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = fname+'_corrected.csv';
+          a.click();
+          URL.revokeObjectURL(a.href);
+        }
+
+      </script>
+
+      <div id="plot"></div>
+      <div id="HRVresult"></div>
+        <py-config type="toml">
+          packages = ["numpy", "matplotlib", "scikit-learn", "scipy"]
+          [[fetch]]
+          files = ["py_ectopic_correction_web_v1.py", "py_anal_HRV.py"]
+        </py-config>
+
+        <py-script>
+          import matplotlib.pyplot as plt
+          import numpy as np
+          import re
+          import matplotlib.patches as mpatches
+          from pyscript import Element
+
+          from py_ectopic_correction_web_v1 import preproc, ectopic_correction, calc_PPI
+          from py_anal_HRV import anal_HRVfreq, anal_HRVtime
+
+          from js import download
+
+          def run_correction(data):
+            data=re.split('; |, |\*|\n|\t', data)
+            IBI=[int(tmp)/128 for tmp in data if tmp.isdigit()]
+            
+            mIBI=sum(IBI)/len(IBI)
+            if mIBI>400:
+              IBI=[ibi/1000 for ibi in IBI]
+
+            t_onset_0=np.cumsum(IBI)
+            t_onset_1=t_onset_0.copy()
+
+            t_onset, flag = ectopic_correction(t_onset_0)
+            t_onset=t_onset[1:]
+            
+            PPI_0=calc_PPI(t_onset_0)
+            PPI=calc_PPI(t_onset)
+            
+            ## DRAW
+            '''
+            fig, ax = plt.subplots()
+            p1=plt.plot(t_onset_0[:-1], PPI_0, 'y', linewidth=5)
+            #plt.plot(t_onset_1[:-1], PPI_1, 'r')
+            p2=plt.plot(t_onset[:-1], PPI, 'k')
+            plt.xlabel('Time (s)')
+            plt.ylabel('interbeat interval (s)')
+            
+            # Legend
+            yellowLine = mpatches.Patch(color='yellow', label='raw')
+            blackLine = mpatches.Patch(color='black', label='corrected')
+            plt.legend(handles=[yellowLine, blackLine])
+            display(fig, target="plot")
+            '''
+
+            # HRV analysis
+            AVNN, SDSD, RMSSD, pNNx=anal_HRVtime(IBI)
+            freq, aY, TP, VLF, LF, HF, LF_HF, nLF, nHF=anal_HRVfreq(IBI)
+            
+            fig, ax = plt.subplots(figsize=(6,4))
+            plt.stem(freq, aY, 'b', markerfmt=" ", basefmt="-b")
+            plt.ylabel('|Magnitude| (ms^2/Hz)')
+            plt.xlabel('Frequency (Hz)')
+            plt.tight_layout()
+            plt.show()
+
+            display(fig, target="plot")
+
+            ## Download
+            sPPI=[str(ppi) for ppi in PPI]
+            PPT_str=', '.join(sPPI)
+            download(PPT_str)
+
+            ## Display HRV result to table
+            txtAVNN = Element("tAVNN")
+            txtSDSD = Element("tSDSD")
+            txtRMSSD = Element("tRMSSD")
+            txtpNN50 = Element("tpNN50")
+
+            txtAVNN.element.innerText = AVNN
+            txtSDSD.element.innerText = SDSD
+            txtRMSSD.element.innerText = RMSSD
+            txtpNN50.element.innerText = pNNx
+
+            xtTP = Element("tTP")
+            txtVLF = Element("tVLF")
+            txtLF = Element("tLF")
+            txtHF = Element("tHF")
+            txtLF_HF = Element("tLF_HF")
+            txtnLF = Element("tnLF")
+            txtnHF = Element("tnHF")
+
+            xtTP.element.innerText = TP
+            txtVLF.element.innerText = VLF
+            txtLF.element.innerText = LF
+            txtHF.element.innerText = HF
+            txtLF_HF.element.innerText = LF_HF
+            txtnLF.element.innerText = nLF
+            txtnHF.element.innerText = nHF
+
+        </py-script>
+      </div> 
+
+    <table border="0.1" width="640">
+      <thead>
+        <tr>
+          <th>HRV variable</th>
+          <th width>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>AVNN (ms)</td>
+          <td id="tAVNN"></td>
+        </tr>
+        <tr>
+          <td>SDSD (ms)</td>
+          <td id="tSDSD"></td>
+        </tr>
+        <tr>
+          <td>RMSSD (ms)</td>
+          <td id="tRMSSD"></td>
+        </tr>
+        <tr>
+          <td>pNN50 (%)</td>
+          <td id="tpNN50"></td>
+        </tr>
+        <tr>
+          <td>TP (ms^2)</td>
+          <td id="tTP"></td>
+        </tr>
+        <tr>
+          <td>VLF (ms^2)</td>
+          <td id="tVLF"></td>
+        </tr>
+        <tr>
+          <td>LF (ms^2)</td>
+          <td id="tLF"></td>
+        </tr>
+        <tr>
+          <td>HF (ms^2)</td>
+          <td id="tHF"></td>
+        </tr>
+        <tr>
+          <td>LF/HF (n.u.)</td>
+          <td id="tLF_HF"></td>
+        </tr>
+        <tr>
+          <td>nLF (n.u.)</td>
+          <td id="tnLF"></td>
+        </tr>
+        <tr>
+          <td>nHF (n.u.)</td>
+          <td id="tnHF"></td>
+        </tr>
+      </tbody>
+    </table>  
+
+    <p align="justify" width=640 px>
+      <font size=2 color='lightgray'>Copyright © 2023 Hangsik Shin (hangsik.shin@gmail.com), Asan Medical Center, University of Ulsan College of Medicine. All Rights Reserved
+      </font>
+    </p>
+  </body>
+</html>
+
+

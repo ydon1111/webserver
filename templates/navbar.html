@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
     <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'pybo:index' %}">DLab 게시판</a>
+        <a class="navbar-brand" href="{% url 'pybo:index' %}">DLab TestSite</a>
         <button class="navbar-toggler" type="button"
                 data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent"
@@ -21,6 +21,11 @@
                 <li>
                     {% if not user.is_authenticated %}
                     <a class="nav-link" href="{% url 'common:signup' %}">회원가입</a>
+                    {% endif %}
+                </li>
+                <li>
+                    {% if not user.is_authenticated %}
+                    <a class="nav-link" href="{% url 'demo:upload_csv' %}">demo</a>
                     {% endif %}
                 </li>
             </ul>

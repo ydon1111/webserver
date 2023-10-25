@@ -2,6 +2,8 @@ import numpy as np
 from scipy.interpolate import CubicSpline
 from scipy import signal
 import scipy
+import matplotlib.pyplot as plt
+
 
 import os 
 
@@ -9,23 +11,43 @@ from django.shortcuts import render
 from django.views.generic.base import View
 
 
-files_path = 'media\\PPI\\'
-file_name_and_time_lst = []
+def read_dataset():
+    files_path = 'media\\PPI\\'
+    file_name_and_time_lst = []
 
-for f_name in os.listdir(f"{files_path}"):
-    written_time = os.path.getctime(f"{files_path}{f_name}")
-    file_name_and_time_lst.append((f_name, written_time))
+    for f_name in os.listdir(f"{files_path}"):
+        written_time = os.path.getctime(f"{files_path}{f_name}")
+        file_name_and_time_lst.append((f_name, written_time))
 
-sorted_file_lst = sorted(file_name_and_time_lst, key=lambda x: x[1], reverse=True)
-recent_file = sorted_file_lst[0]
-recent_file_name = recent_file[0]
+    sorted_file_lst = sorted(file_name_and_time_lst, key=lambda x: x[1], reverse=True)
 
-csv_dataset = os.path.join(files_path,recent_file_name)
+
+    if sorted_file_lst:  
+        recent_file = sorted_file_lst[0]
+        recent_file_name = recent_file[0]
+        csv_dataset = os.path.join(files_path,recent_file_name)
+    else:
+        pass
+
+    return csv_dataset
+
+
+def dataset_IBI(data):
+    data = np.genfromtxt(data, delimiter=',')
+    data = np.nan_to_num(data, copy=False)
+
+    # data=re.split('; |, |\*|\n|\t', data)
+    IBI=[int(tmp)/128 for tmp in data]
+    
+    # print(IBI,"@@@@@")
+    mIBI=sum(IBI)/len(IBI)
+    if mIBI>400:
+        IBI=[ibi/1000 for ibi in IBI]
+    
+    return IBI
 
 
 def check_ms(IBI): 
-    IBI = np.genfromtxt(IBI, delimiter=',')
-    IBI = np.nan_to_num(IBI, copy=False)
 
     IBI=np.array(IBI)
     if np.mean(IBI)<400:
@@ -47,6 +69,7 @@ def check_IBI(input):
     return input
 
 def anal_HRVtime(IBI):
+    IBI=dataset_IBI(IBI)
     IBI=check_ms(IBI)
     IBI=check_IBI(IBI)
 
@@ -64,6 +87,9 @@ def anal_HRVtime(IBI):
     return '{:.1f}'.format(AVNN), '{:.1f}'.format(SDSD), '{:.1f}'.format(RMSSD), '{:.1f}'.format(pNNx)
 
 def anal_HRVfreq(IBI):
+
+    IBI = dataset_IBI(IBI)
+
     IBI=check_ms(IBI)
     IBI=check_IBI(IBI)
     tonset=np.cumsum(IBI)
@@ -104,9 +130,20 @@ def anal_HRVfreq(IBI):
 
 
 def show_analysis_result(request):
-    dataset = csv_dataset  
+    dataset = read_dataset() 
     avnn, sdsd, rmssd, pnnx = anal_HRVtime(dataset)
     freq, aY, ptp, pvlf, plf, phf, plf_hf, nlf, nhf = anal_HRVfreq(dataset)
+
+
+
+    fig, ax = plt.subplots(figsize=(6,4))
+    plt.stem(freq, aY, 'b', markerfmt=" ", basefmt="-b")
+    plt.ylabel('|Magnitude| (ms^2/Hz)')
+    plt.xlabel('Frequency (Hz)')
+    plt.tight_layout()
+    plt.show()
+
+   
 
     return render(request, 'demo/result.html', {
         'avnn_result': avnn,
@@ -123,7 +160,3 @@ def show_analysis_result(request):
     })
 
 
-
-
-
-# show_analysis_result(csv_dataset)

@@ -1,3 +1,4 @@
+import io
 import numpy as np
 from scipy.interpolate import CubicSpline
 from scipy import signal
@@ -5,14 +6,17 @@ import scipy
 import matplotlib.pyplot as plt
 
 
+
+
 import os 
+import base64
 
 from django.shortcuts import render
 from django.views.generic.base import View
 
 
 def read_dataset():
-    files_path = 'media\\PPI\\'
+    files_path = 'media/PPI/'
     file_name_and_time_lst = []
 
     for f_name in os.listdir(f"{files_path}"):
@@ -33,8 +37,18 @@ def read_dataset():
 
 
 def dataset_IBI(data):
-    data = np.genfromtxt(data, delimiter=',')
-    data = np.nan_to_num(data, copy=False)
+    if data.endswith('.csv'):
+        data = np.genfromtxt(data, delimiter=',')
+        data = np.nan_to_num(data, copy=False)
+
+    elif data.endswith('.txt'):
+        with open(data, 'r') as file:
+            data = file.read()
+        data = np.genfromtxt(io.StringIO(data), delimiter=',')
+        data = np.nan_to_num(data, copy=False)
+
+    else:
+        raise ValueError("Unsupported file format. Supported formats: .csv and .txt")
 
     # data=re.split('; |, |\*|\n|\t', data)
     IBI=[int(tmp)/128 for tmp in data]
@@ -130,20 +144,27 @@ def anal_HRVfreq(IBI):
 
 
 def show_analysis_result(request):
-    dataset = read_dataset() 
+    dataset = read_dataset()
     avnn, sdsd, rmssd, pnnx = anal_HRVtime(dataset)
     freq, aY, ptp, pvlf, plf, phf, plf_hf, nlf, nhf = anal_HRVfreq(dataset)
 
-
-
-    fig, ax = plt.subplots(figsize=(6,4))
+    # Create and save the plot to a BytesIO object
+    plt.switch_backend('Agg') 
+    fig, ax = plt.subplots(figsize=(6, 4))
     plt.stem(freq, aY, 'b', markerfmt=" ", basefmt="-b")
     plt.ylabel('|Magnitude| (ms^2/Hz)')
     plt.xlabel('Frequency (Hz)')
     plt.tight_layout()
-    plt.show()
 
-   
+    # Save the plot to a BytesIO object
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    plt.close()
+
+    # Embed the plot in the response
+    data_uri = base64.b64encode(buf.read()).decode('utf-8')
+    img_tag = f'<img src="data:image/png;base64,{data_uri}"/>'
 
     return render(request, 'demo/result.html', {
         'avnn_result': avnn,
@@ -157,6 +178,7 @@ def show_analysis_result(request):
         'plf_hf_result': plf_hf,
         'nlf_result': nlf,
         'nhf_result': nhf,
+        'plot': img_tag  # Include the plot in the response
     })
 
 

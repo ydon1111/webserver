@@ -5,11 +5,9 @@ from scipy import signal
 import scipy
 import matplotlib.pyplot as plt
 
-
-
-
 import os 
 import base64
+import re
 
 from django.shortcuts import render
 from django.views.generic.base import View
@@ -24,7 +22,6 @@ def read_dataset():
         file_name_and_time_lst.append((f_name, written_time))
 
     sorted_file_lst = sorted(file_name_and_time_lst, key=lambda x: x[1], reverse=True)
-
 
     if sorted_file_lst:  
         recent_file = sorted_file_lst[0]
@@ -41,19 +38,22 @@ def dataset_IBI(data):
         data = np.genfromtxt(data, delimiter=',')
         data = np.nan_to_num(data, copy=False)
 
+        IBI=[int(tmp)/128 for tmp in data]
+
     elif data.endswith('.txt'):
         with open(data, 'r') as file:
             data = file.read()
-        data = np.genfromtxt(io.StringIO(data), delimiter=',')
+
+        # data = np.genfromtxt(io.StringIO(data), delimiter=',')
+        data = re.split('; |, |\*|\n|\t', data)
         data = np.nan_to_num(data, copy=False)
 
+        IBI=[int(tmp)/128 for tmp in data if tmp.isdigit()]
     else:
         raise ValueError("Unsupported file format. Supported formats: .csv and .txt")
 
-    # data=re.split('; |, |\*|\n|\t', data)
-    IBI=[int(tmp)/128 for tmp in data]
+   
     
-    # print(IBI,"@@@@@")
     mIBI=sum(IBI)/len(IBI)
     if mIBI>400:
         IBI=[ibi/1000 for ibi in IBI]

@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.urls import path, include
 
+
+
 from pybo.views import base_views
 from demo.views import upload_views
 

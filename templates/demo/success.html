@@ -1,9 +1,13 @@
 {% extends "base.html" %}
+{% load static %}
 {% block content %}
 <div>
     <title>Success</title>
     <h1 style="text-align: center;"><strong>HRV analysis tool</strong></h1>
     <h3 style="text-align: center;">Upload Successful</h3>
+
+    <img src="{% static 'demo/loading_img.gif' %}" width="10%" height="10%" style="display: block; margin: 0 auto;">
+
     	
     <a style="text-align: center;" href="{% url 'demo:result' %}">View Results</a>
 </div>
@@ -13,7 +17,7 @@
     // Automatically redirect after 1.5 seconds
     setTimeout(function() {
         window.location.href = "{% url 'demo:result' %}";
-    }, 1000); // 1500 milliseconds (1.5 seconds)
+    }, 1000); // 1000 milliseconds (1 seconds)
 </script>
 {% endblock %}
 

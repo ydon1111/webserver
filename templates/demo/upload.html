@@ -1,20 +1,121 @@
 {% extends "base.html" %}
+
 {% block content %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>CSV 파일 업로드</title>
-</head>
-<body>
-    <h1>CSV 파일 업로드</h1>
+<div class="header">
+    <h1 style="text-align: center;"><strong>HRV analysis tool</strong></h1>
+</div>
+<div class="file-info"></div>
+<form method="post" enctype="multipart/form-data" id="upload-form">
+    {% csrf_token %}
+    <div class="file-drop-container">
+        <div class="file-drop">
+            <label for="id_ppi_file">Drag and drop your PPI file(.csv or .txt) here</label><br>
+            {{ form.ppi_file }}
+        </div>
+        <input type="submit" value="Upload" class="upload-button" id="upload-button">
+    </div>
+</form>
 
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">파일 업로드</button>
-        
-    </form>
+<div class="centered-divs">
+    <div class="centered-text">
+        This program computes various HRV time domain variables, including AVNN, SDSD, RMSSD, and pNN50, as well as
+        frequency domain variables such as TP, VLF, LF, HF, LF/HF, nLF, and nHF.
+    </div>
 
-</body>
-</html>
+    <div class="centered-text">
+        Heart Rate Variability (HRV) is a physiological phenomenon that refers to the variation in time intervals
+        between successive heartbeats.<br> It is a measure of the autonomic nervous system's influence on heart rate and is often used as a non-invasive marker of the body's ability to regulate and respond to various physiological and psychological stressors.
+    </div>
+</div>
+
+<style>
+    .header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .file-drop-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 40vh;
+    }
+
+    .file-drop {
+        border: 2px dashed #ccc;
+        padding: 78px;
+        text-align: center;
+        cursor: pointer;
+        height: 20vh;
+        background-color: #f5f5f5;
+        text-align: center;
+        margin-bottom: 50px;
+    }
+
+    .file-drop label {
+        font-size: 1.2em;
+    }
+
+    .upload-button {
+        width: 25%;
+        padding: 10px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    .file-info {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .centered-divs {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 14vh;
+    }
+
+    .centered-text {
+        text-align: center;
+        padding: 0 20px;
+        margin-bottom: 20px;
+    }
+</style>
+
+<script>
+    const fileDrop = document.querySelector('.file-drop');
+    const uploadForm = document.getElementById('upload-form');
+    const uploadButton = document.getElementById('upload-button');
+    
+    fileDrop.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fileDrop.classList.add('dragover');
+    });
+
+    fileDrop.addEventListener('dragleave', () => {
+        fileDrop.classList.remove('dragover');
+    });
+
+    fileDrop.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileDrop.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        const input = document.querySelector('#id_ppi_file');
+        input.files = e.dataTransfer.files;
+        input.files[0] = file;
+    });
+
+    uploadForm.addEventListener('submit', (e) => {
+        const inputFile = document.querySelector('#id_ppi_file');
+        const fileName = inputFile.value;
+        if (!fileName.endsWith('.csv') && !fileName.endsWith('.txt')) {
+            e.preventDefault(); // Prevent the form from submitting
+            alert('Please upload a CSV or TXT file.');
+        }
+    });
+</script>
 {% endblock %}

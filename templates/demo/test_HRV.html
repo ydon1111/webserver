@@ -52,6 +52,8 @@ This program computes various HRV time domain variables, including AVNN, SDSD, R
           };
           reader.readAsText(file);
         });
+
+        
         function download(fileContent){
           const blob = new Blob([fileContent], { type: 'text/plain' });
           const a = document.createElement('a');

@@ -2,10 +2,19 @@
 {% block content %}
 <div>
     <title>Success</title>
-    <h2>PPI CSV Upload Successful</h2>
+    <h1 style="text-align: center;"><strong>HRV analysis tool</strong></h1>
+    <h3 style="text-align: center;">Upload Successful</h3>
     	
-    <a href="{% url 'demo:result' %}">View Results</a>
+    <a style="text-align: center;" href="{% url 'demo:result' %}">View Results</a>
 </div>
+
+
+<script>
+    // Automatically redirect after 1.5 seconds
+    setTimeout(function() {
+        window.location.href = "{% url 'demo:result' %}";
+    }, 1000); // 1500 milliseconds (1.5 seconds)
+</script>
 {% endblock %}
 
 

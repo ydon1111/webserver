@@ -4,24 +4,103 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>HRV Analysis Result</title>
+    <title> Analysis Result</title>
 </head>
-<body>
-    <h1>HRV Time Analysis Result</h1>
-    <p>AVNN: {{ avnn_result }}</p>
-    <p>SDSD: {{ sdsd_result }}</p>
-    <p>RMSSD: {{ rmssd_result }}</p>
-    <p>pNNx: {{ pnnx_result }}</p>
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
 
-    <h1>HRV Frequency Analysis Result</h1>
-    <p>pTP: {{ ptp_result }}</p>
-    <p>pVLF: {{ pvlf_result }}</p>
-    <p>pLF: {{ plf_result }}</p>
-    <p>pHF: {{ phf_result }}</p>
-    <p>pLF/HF: {{ plf_hf_result }}</p>
-    <p>nLF: {{ nlf_result }}</p>
-    <p>nHF: {{ nhf_result }}</p>
-    <p>plot: {{ plot|safe}}</p>
+    th, td {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+</style>
+<body>
+    <h1 style="text-align: center;"><strong>HRV analysis tool</strong></h1>
+    
+    <div style="display: flex; justify-content: center;">
+        <!-- Left Column -->
+        <div style="margin: 100px; text-align: center;">
+            <div>
+                <h3>HRV Time Analysis Result</h3>
+                <table>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Value</th>
+                    </tr>
+                    <tr>
+                        <td><strong>AVNN</strong></td>
+                        <td>{{ avnn_result }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SDSD</strong></td>
+                        <td>{{ sdsd_result }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>RMSSD</strong></td>
+                        <td>{{ rmssd_result }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>pNNx</strong></td>
+                        <td>{{ pnnx_result }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    
+        <!-- Right Column -->
+        <div style="margin: 100px; text-align: center;">
+            <div>
+                <h3>HRV Frequency Analysis Result</h3>
+                <table>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Value</th>
+                    </tr>
+                    <tr>
+                        <td><strong>pTP</strong></td>
+                        <td>{{ ptp_result }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>pVLF</strong></td>
+                        <td>{{ pvlf_result }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>pLF</strong></td>
+                        <td>{{ plf_result }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>pHF</strong></td>
+                        <td>{{ phf_result }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>pLF/HF</strong></td>
+                        <td>{{ plf_hf_result }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>nLF</strong></td>
+                        <td>{{ nlf_result }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>nHF</strong></td>
+                        <td>{{ nhf_result }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Below Left and Right Columns -->
+    <div style="text-align: center; width: 80%; margin: 0 auto;">
+        <p>{{ plot|safe }}</p>
+    </div>
 </body>
 </html>
 
